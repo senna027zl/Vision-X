@@ -1,6 +1,3 @@
-import { extension_settings, saveMetadataDebounced } from '../../../extensions.js';
-import { saveSettingsDebounced } from '../../../../script.js';
-
 const EXT_NAME = 'vision-x';
 
 // ============ ESTADO GLOBAL ============
