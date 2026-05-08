@@ -1,6 +1,3 @@
-// DEBUG VERSION — Vision X
-alert('Vision X: Script carregado!'); // Aparece assim que o script roda
-
 const EXT_NAME = 'vision-x';
 
 // ============ ESTADO ============
@@ -128,7 +125,7 @@ function onDragStart(e) {
     selectLayer(id);
 }
 
-// ============ PAINEL DE EDIÇÃO ============
+// ============ PAINEL DE EDIÇÃO (mobile-friendly) ============
 function buildEditorPanel() {
     editorPanel = document.createElement('div');
     editorPanel.id = 'vx-editor';
@@ -266,10 +263,12 @@ function addImageLayer() {
         const id = Date.now();
         layers.push({
             id, type: 'image', src,
-            x: 80 + Math.random()*150,
-            y: 80 + Math.random()*150,
-            width: 250, height: 250,
-            opacity: 1, blendMode: 'normal',
+            x: 50 + Math.random() * 100,
+            y: 80 + Math.random() * 100,
+            width: 180,
+            height: 180,
+            opacity: 1,
+            blendMode: 'normal',
             visible: true,
             gradient: { enabled: false, color1: '#000000', color2: '#ffffff', angle: 180 }
         });
@@ -288,17 +287,25 @@ function addImageLayer() {
     }
 }
 
-// ============ BOTÃO FLUTUANTE (DEBUG - VERMELHO GIGANTE NO TOPO) ============
+// ============ BOTÃO FLUTUANTE (fixo embaixo à direita, posição segura) ============
 function buildFloatingButton() {
     floatingBtn = document.createElement('button');
     floatingBtn.id = 'vx-fab';
-    floatingBtn.textContent = '👁 VISION X';
+    floatingBtn.textContent = '👁';
     floatingBtn.title = 'Vision X';
     floatingBtn.style.cssText = `
-        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-        z-index: 99999; background: red; color: white; font-size: 24px;
-        padding: 15px 30px; border: none; border-radius: 8px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: pointer;
+        position: fixed;
+        bottom: 80px;
+        right: 16px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #cba6f7;
+        color: #1e1e2e;
+        border: none;
+        font-size: 28px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        z-index: 99999;
     `;
     floatingBtn.onclick = () => togglePanel(!panelOpen);
     document.body.appendChild(floatingBtn);
@@ -306,10 +313,19 @@ function buildFloatingButton() {
 
 function togglePanel(show) {
     panelOpen = show;
-    if (editorPanel) editorPanel.style.transform = show ? 'translateX(0)' : 'translateX(110%)';
-    overlayContainer.style.pointerEvents = show ? 'all' : 'none';
-    floatingBtn.style.background = show ? '#a6e3a1' : '#cba6f7';
-    if (show) { updateLayerList(); updatePropertiesPanel(); }
+    if (editorPanel) {
+        editorPanel.style.transform = show ? 'translateX(0)' : 'translateX(110%)';
+    }
+    if (overlayContainer) {
+        overlayContainer.style.pointerEvents = show ? 'all' : 'none';
+    }
+    if (floatingBtn) {
+        floatingBtn.style.background = show ? '#a6e3a1' : '#cba6f7';
+    }
+    if (show) {
+        updateLayerList();
+        updatePropertiesPanel();
+    }
 }
 
 // ============ OVERLAY ============
@@ -324,27 +340,19 @@ function buildOverlay() {
     document.body.appendChild(overlayContainer);
 }
 
-// ============ INIT (direto, sem jQuery) ============
-(function init() {
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(() => {
-            loadState();
-            buildOverlay();
-            buildFloatingButton();
-            renderAllLayers();
-            setTimeout(buildEditorPanel, 200);
-            togglePanel(false);
-            console.log('[Vision X] Carregado ✓');
-        }, 100);
-    } else {
-        document.addEventListener('DOMContentLoaded', () => {
-            loadState();
-            buildOverlay();
-            buildFloatingButton();
-            renderAllLayers();
-            setTimeout(buildEditorPanel, 200);
-            togglePanel(false);
-            console.log('[Vision X] Carregado ✓');
-        });
-    }
-})();
+// ============ INIT (seguro, espera body existir) ============
+function initVisionX() {
+    loadState();
+    buildOverlay();
+    buildFloatingButton();
+    renderAllLayers();
+    setTimeout(buildEditorPanel, 200);
+    togglePanel(false);
+    console.log('[Vision X] Carregado ✓');
+}
+
+if (document.body) {
+    initVisionX();
+} else {
+    document.addEventListener('DOMContentLoaded', initVisionX);
+}
