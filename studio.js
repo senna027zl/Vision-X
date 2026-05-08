@@ -1,4 +1,4 @@
-// Vision X Studio v2.0 - Bookmarklet Edition
+// Vision X Studio v2.0 — Completo
 (function() {
     if (document.getElementById('visionx-studio-loaded')) return;
     const marker = document.createElement('script');
@@ -9,7 +9,7 @@
     let state = {
         background: { type: 'color', value: '#121212' },
         layers: [],
-        animations: { particles: false, rain: false, wave: false },
+        animations: { particles: false, rain: false },
         messages: { bubbleColor: '#313244', textColor: '#cdd6f4', borderRadius: 12 }
     };
     let selectedLayerId = null;
@@ -17,28 +17,20 @@
     let panel = null;
     let panelOpen = false;
 
-    function saveState() {
-        try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
-    }
-    function loadState() {
-        try {
-            const saved = localStorage.getItem(LS_KEY);
-            if (saved) Object.assign(state, JSON.parse(saved));
-        } catch(e) {}
-    }
+    function saveState() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {} }
+    function loadState() { try { const s = localStorage.getItem(LS_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e) {} }
 
     function applyBackground() {
-        const bg = state.background;
         document.body.style.backgroundImage = '';
         document.body.style.backgroundColor = '';
-        if (bg.type === 'image' && bg.value) {
-            document.body.style.backgroundImage = `url(${bg.value})`;
+        if (state.background.type === 'image' && state.background.value) {
+            document.body.style.backgroundImage = `url(${state.background.value})`;
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundPosition = 'center';
-        } else if (bg.type === 'gradient' && bg.value) {
-            document.body.style.backgroundImage = bg.value;
+        } else if (state.background.type === 'gradient' && state.background.value) {
+            document.body.style.backgroundImage = state.background.value;
         } else {
-            document.body.style.backgroundColor = bg.value;
+            document.body.style.backgroundColor = state.background.value;
         }
     }
 
@@ -159,7 +151,7 @@
             <select id="bg-type"><option value="color" ${state.background.type==='color'?'selected':''}>Cor sólida</option><option value="image" ${state.background.type==='image'?'selected':''}>Imagem</option><option value="gradient" ${state.background.type==='gradient'?'selected':''}>Gradiente</option></select>
             <div id="bg-color-picker"><label>Cor:</label><input type="color" id="bg-color" value="${state.background.type==='color'?state.background.value:'#121212'}"></div>
             <div id="bg-image-upload"><input type="file" id="bg-file" accept="image/*"><button id="bg-upload-btn">Enviar</button></div>
-            <div id="bg-gradient"><label>Gradiente CSS:</label><input type="text" id="bg-gradient-val" value="${state.background.type==='gradient'?state.background.value:''}"></div>`;
+            <div id="bg-gradient"><label>Gradiente CSS:</label><input type="text" id="bg-gradient-val" placeholder="linear-gradient(45deg, #000, #fff)" value="${state.background.type==='gradient'?state.background.value:''}"></div>`;
         document.getElementById('bg-type').onchange = function() {
             state.background.type = this.value; saveState(); applyBackground(); buildPanelContent();
         };
@@ -179,7 +171,7 @@
     }
 
     function buildLayersTab(container) {
-        container.innerHTML = `<h4>Camadas</h4><button id="add-layer-btn">+ Adicionar Imagem</button><input type="file" id="layer-file" accept="image/*" style="display:none"><ul id="layers-list"></ul><div id="layer-props"></div>`;
+        container.innerHTML = `<h4>Camadas</h4><button id="add-layer-btn">+ Adicionar Imagem</button><input type="file" id="layer-file" accept="image/*" style="display:none"><input type="text" id="layer-url" placeholder="URL da imagem" style="width:100%; margin-top:8px;"><ul id="layers-list" style="margin-top:8px;"></ul><div id="layer-props"></div>`;
         document.getElementById('add-layer-btn').onclick = () => document.getElementById('layer-file').click();
         document.getElementById('layer-file').onchange = function() {
             const file = this.files[0];
@@ -191,7 +183,32 @@
             };
             reader.readAsDataURL(file);
         };
-        // layers list and properties would be built here (omitted for brevity, but you can include the full logic from previous version)
+        document.getElementById('layer-url').onchange = function() {
+            const url = this.value.trim();
+            if (!url) return;
+            state.layers.push({ id: Date.now(), type:'image', src: url, x:100, y:100, width:200, height:200, opacity:1, blendMode:'normal', blur:0, brightness:1, contrast:1, rotation:0, visible:true });
+            saveState(); renderAllLayers(); buildPanelContent();
+        };
+        updateLayersList();
+    }
+
+    function updateLayersList() {
+        const list = document.getElementById('layers-list');
+        if (!list) return;
+        list.innerHTML = state.layers.length === 0 ? '<p>Nenhuma camada</p>' : '';
+        state.layers.forEach((layer, idx) => {
+            const item = document.createElement('div');
+            item.style.cssText = 'padding:4px;cursor:pointer;display:flex;justify-content:space-between;';
+            if (layer.id === selectedLayerId) item.style.background = '#45475a';
+            item.innerHTML = `<span>🖼 Camada ${idx+1}</span><button class="vis-toggle" data-id="${layer.id}">${layer.visible?'👁':'🚫'}</button>`;
+            item.onclick = () => selectLayer(layer.id);
+            item.querySelector('.vis-toggle').onclick = (e) => {
+                e.stopPropagation();
+                layer.visible = !layer.visible;
+                saveState(); renderAllLayers(); updateLayersList();
+            };
+            list.appendChild(item);
+        });
     }
 
     function buildAnimationsTab(container) {
@@ -205,7 +222,14 @@
     function toggleAnimations() {
         let style = document.getElementById('vx-anim-style');
         if (!style) { style = document.createElement('style'); style.id = 'vx-anim-style'; document.head.appendChild(style); }
-        style.textContent = state.animations.particles ? `body::before { content:''; position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2) 1px, transparent 1px); background-size:20px 20px; animation:float 20s linear infinite; pointer-events:none; z-index:9999; } @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-100%); } }` : '';
+        let css = '';
+        if (state.animations.particles) {
+            css += `body::before { content:''; position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2) 1px, transparent 1px); background-size:20px 20px; animation:float 20s linear infinite; pointer-events:none; z-index:9999; } @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-100%); } }`;
+        }
+        if (state.animations.rain) {
+            css += `body::after { content:''; position:fixed; top:-10px; left:0; width:2px; height:100px; background:linear-gradient(transparent, rgba(255,255,255,0.3)); animation:rain 0.5s linear infinite; pointer-events:none; z-index:9999; } @keyframes rain { 0% { transform: translateY(-100px); } 100% { transform: translateY(100vh); } }`;
+        }
+        style.textContent = css;
     }
 
     function buildMessagesTab(container) {
