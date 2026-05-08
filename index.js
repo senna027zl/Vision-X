@@ -1,6 +1,9 @@
+// DEBUG VERSION — Vision X
+alert('Vision X: Script carregado!'); // Aparece assim que o script roda
+
 const EXT_NAME = 'vision-x';
 
-// ============ ESTADO GLOBAL ============
+// ============ ESTADO ============
 let layers = [];
 let selectedLayerId = null;
 let overlayContainer = null;
@@ -12,7 +15,6 @@ let dragState = null;
 // ============ PERSISTÊNCIA ============
 function saveState() {
     if (!extension_settings[EXT_NAME]) extension_settings[EXT_NAME] = {};
-    // Não salva src base64 completo para não estourar o settings — salva referência
     extension_settings[EXT_NAME].layers = layers.map(l => ({
         ...l,
         src: l.src && l.src.startsWith('data:') ? l.src : l.src
@@ -25,7 +27,7 @@ function loadState() {
     layers = extension_settings[EXT_NAME].layers || [];
 }
 
-// ============ RENDER CAMADAS ============
+// ============ RENDER ============
 function renderAllLayers() {
     if (!overlayContainer) return;
     overlayContainer.innerHTML = '';
@@ -54,8 +56,6 @@ function renderAllLayers() {
             const img = document.createElement('img');
             img.src = layer.src;
             img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-
-            // Gradiente por cima se configurado
             if (layer.gradient && layer.gradient.enabled) {
                 const g = layer.gradient;
                 el.style.background = `linear-gradient(${g.angle}deg, ${g.color1} 0%, ${g.color2} 100%)`;
@@ -65,11 +65,9 @@ function renderAllLayers() {
                 img.style.left = '0';
                 img.style.zIndex = '-1';
             }
-
             el.appendChild(img);
         }
 
-        // Drag com touch e mouse
         el.addEventListener('mousedown', onDragStart);
         el.addEventListener('touchstart', onDragStart, { passive: true });
         el.addEventListener('click', (e) => {
@@ -77,7 +75,6 @@ function renderAllLayers() {
             e.stopPropagation();
             selectLayer(layer.id);
         });
-
         overlayContainer.appendChild(el);
     });
 }
@@ -101,7 +98,6 @@ function onDragStart(e) {
     const startY = isTouch ? e.touches[0].clientY : e.clientY;
     const origX = layer.x;
     const origY = layer.y;
-
     dragState = { id, startX, startY, origX, origY };
 
     const onMove = (ev) => {
@@ -129,7 +125,6 @@ function onDragStart(e) {
     document.addEventListener('mouseup', onUp);
     document.addEventListener('touchmove', onMove, { passive: true });
     document.addEventListener('touchend', onUp);
-
     selectLayer(id);
 }
 
@@ -144,7 +139,6 @@ function buildEditorPanel() {
             <span>👁 Vision X</span>
             <button id="vx-close">✕</button>
         </div>
-
         <div class="vx-section">
             <div class="vx-section-title">Adicionar</div>
             <label class="vx-label">Imagem da galeria</label>
@@ -153,18 +147,15 @@ function buildEditorPanel() {
             <input type="text" id="vx-url" placeholder="https://..." class="vx-input">
             <button id="vx-add-img" class="vx-btn vx-btn-accent">+ Adicionar imagem</button>
         </div>
-
         <div class="vx-section">
             <div class="vx-section-title">Camadas</div>
             <ul id="vx-layer-list" class="vx-list"></ul>
         </div>
-
         <div id="vx-properties"></div>
     `;
 
     document.getElementById('vx-close').onclick = () => togglePanel(false);
     document.getElementById('vx-add-img').onclick = addImageLayer;
-
     updateLayerList();
 }
 
@@ -203,34 +194,24 @@ function updatePropertiesPanel() {
     panel.innerHTML = `
         <div class="vx-section">
             <div class="vx-section-title">Propriedades</div>
-
-            <label class="vx-label">Opacidade: <span id="vx-op-val">${Math.round((layer.opacity ?? 1) * 100)}%</span></label>
+            <label class="vx-label">Opacidade: <span id="vx-op-val">${Math.round((layer.opacity ?? 1)*100)}%</span></label>
             <input type="range" id="vx-opacity" min="0" max="1" step="0.01" value="${layer.opacity ?? 1}" class="vx-range">
-
             <label class="vx-label">Largura: <span id="vx-w-val">${layer.width}px</span></label>
             <input type="range" id="vx-width" min="50" max="1200" value="${layer.width}" class="vx-range">
-
             <label class="vx-label">Altura: <span id="vx-h-val">${layer.height}px</span></label>
             <input type="range" id="vx-height" min="50" max="1200" value="${layer.height}" class="vx-range">
-
             <label class="vx-label">Blend Mode</label>
             <select id="vx-blend" class="vx-input">
-                ${['normal','multiply','screen','overlay','soft-light','hard-light','color-dodge','color-burn','darken','lighten','difference','exclusion'].map(m =>
-                    `<option value="${m}" ${layer.blendMode === m ? 'selected' : ''}>${m}</option>`
-                ).join('')}
+                ${['normal','multiply','screen','overlay','soft-light','hard-light','color-dodge','color-burn','darken','lighten','difference','exclusion'].map(m => `<option value="${m}" ${layer.blendMode===m?'selected':''}>${m}</option>`).join('')}
             </select>
-
             <div class="vx-section-title" style="margin-top:12px">Degradê sobre imagem</div>
-            <label class="vx-label">
-                <input type="checkbox" id="vx-grad-on" ${layer.gradient?.enabled ? 'checked' : ''}> Ativar degradê
-            </label>
+            <label class="vx-label"><input type="checkbox" id="vx-grad-on" ${layer.gradient?.enabled?'checked':''}> Ativar degradê</label>
             <label class="vx-label">Cor 1</label>
-            <input type="color" id="vx-grad-c1" value="${layer.gradient?.color1 || '#000000'}" class="vx-color">
+            <input type="color" id="vx-grad-c1" value="${layer.gradient?.color1||'#000000'}" class="vx-color">
             <label class="vx-label">Cor 2</label>
-            <input type="color" id="vx-grad-c2" value="${layer.gradient?.color2 || '#ffffff'}" class="vx-color">
-            <label class="vx-label">Ângulo: <span id="vx-ang-val">${layer.gradient?.angle || 180}°</span></label>
-            <input type="range" id="vx-grad-angle" min="0" max="360" value="${layer.gradient?.angle || 180}" class="vx-range">
-
+            <input type="color" id="vx-grad-c2" value="${layer.gradient?.color2||'#ffffff'}" class="vx-color">
+            <label class="vx-label">Ângulo: <span id="vx-ang-val">${layer.gradient?.angle||180}°</span></label>
+            <input type="range" id="vx-grad-angle" min="0" max="360" value="${layer.gradient?.angle||180}" class="vx-range">
             <button id="vx-remove" class="vx-btn vx-btn-danger" style="margin-top:12px">🗑 Remover camada</button>
         </div>
     `;
@@ -247,11 +228,10 @@ function updatePropertiesPanel() {
             } else {
                 layer[prop] = val;
             }
-            // Update display spans
-            if (id === 'vx-opacity') document.getElementById('vx-op-val').textContent = Math.round(val * 100) + '%';
-            if (id === 'vx-width') document.getElementById('vx-w-val').textContent = val + 'px';
-            if (id === 'vx-height') document.getElementById('vx-h-val').textContent = val + 'px';
-            if (id === 'vx-grad-angle') document.getElementById('vx-ang-val').textContent = val + '°';
+            if (id === 'vx-opacity') document.getElementById('vx-op-val').textContent = Math.round(val*100)+'%';
+            if (id === 'vx-width') document.getElementById('vx-w-val').textContent = val+'px';
+            if (id === 'vx-height') document.getElementById('vx-h-val').textContent = val+'px';
+            if (id === 'vx-grad-angle') document.getElementById('vx-ang-val').textContent = val+'°';
             saveState();
             renderAllLayers();
         });
@@ -280,15 +260,14 @@ function updatePropertiesPanel() {
 function addImageLayer() {
     const file = document.getElementById('vx-file').files[0];
     const url = document.getElementById('vx-url').value.trim();
-
     if (!file && !url) { alert('Selecione um arquivo ou cole uma URL'); return; }
 
     const create = (src) => {
         const id = Date.now();
         layers.push({
             id, type: 'image', src,
-            x: 80 + Math.random() * 150,
-            y: 80 + Math.random() * 150,
+            x: 80 + Math.random()*150,
+            y: 80 + Math.random()*150,
             width: 250, height: 250,
             opacity: 1, blendMode: 'normal',
             visible: true,
@@ -309,12 +288,18 @@ function addImageLayer() {
     }
 }
 
-// ============ BOTÃO FLUTUANTE ============
+// ============ BOTÃO FLUTUANTE (DEBUG - VERMELHO GIGANTE NO TOPO) ============
 function buildFloatingButton() {
     floatingBtn = document.createElement('button');
     floatingBtn.id = 'vx-fab';
-    floatingBtn.textContent = '👁';
+    floatingBtn.textContent = '👁 VISION X';
     floatingBtn.title = 'Vision X';
+    floatingBtn.style.cssText = `
+        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+        z-index: 99999; background: red; color: white; font-size: 24px;
+        padding: 15px 30px; border: none; border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: pointer;
+    `;
     floatingBtn.onclick = () => togglePanel(!panelOpen);
     document.body.appendChild(floatingBtn);
 }
@@ -339,13 +324,27 @@ function buildOverlay() {
     document.body.appendChild(overlayContainer);
 }
 
-// ============ INIT ============
-jQuery(async () => {
-    loadState();
-    buildOverlay();
-    buildFloatingButton();
-    renderAllLayers();
-    setTimeout(buildEditorPanel, 200);
-    togglePanel(false);
-    console.log('[Vision X] Carregado ✓');
-});
+// ============ INIT (direto, sem jQuery) ============
+(function init() {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(() => {
+            loadState();
+            buildOverlay();
+            buildFloatingButton();
+            renderAllLayers();
+            setTimeout(buildEditorPanel, 200);
+            togglePanel(false);
+            console.log('[Vision X] Carregado ✓');
+        }, 100);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            buildOverlay();
+            buildFloatingButton();
+            renderAllLayers();
+            setTimeout(buildEditorPanel, 200);
+            togglePanel(false);
+            console.log('[Vision X] Carregado ✓');
+        });
+    }
+})();
