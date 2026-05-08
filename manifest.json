@@ -1,0 +1,9 @@
+{
+  "display_name": "Vision X",
+  "version": "1.0.0",
+  "author": "Senna",
+  "js": "index.js",
+  "css": "style.css",
+  "default_enabled": true
+}
+
