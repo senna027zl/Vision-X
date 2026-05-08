@@ -1,0 +1,231 @@
+/* Styles for Vision X */
+:root {
+  --vx-bg: #111827;
+  --vx-panel: rgba(15, 23, 42, 0.96);
+  --vx-panel-border: rgba(148, 163, 184, 0.16);
+  --vx-accent: #8b5cf6;
+  --vx-accent-strong: #a78bfa;
+  --vx-text: #e2e8f0;
+  --vx-muted: #94a3b8;
+  --vx-surface: #1f2937;
+  --vx-surface-strong: #111827;
+  --vx-danger: #f87171;
+  --vx-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--vx-text);
+}
+
+#vx-overlay {
+  pointer-events: none;
+}
+
+.vx-layer {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vx-layer.vx-selected {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.35), 0 14px 40px rgba(15, 23, 42, 0.28);
+  transform: scale(1.02);
+}
+
+#vx-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: none;
+  background: var(--vx-accent);
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+  transition: transform 0.2s ease, background 0.2s ease;
+  z-index: 10010;
+}
+
+#vx-fab:hover {
+  transform: translateY(-2px);
+}
+
+#vx-editor {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 18px;
+  background: var(--vx-panel);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--vx-panel-border);
+  border-radius: 24px;
+  box-shadow: var(--vx-shadow);
+  overflow-y: auto;
+  z-index: 10005;
+  transform: translateX(110%);
+  transition: transform 0.25s ease;
+}
+
+.vx-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.vx-section {
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.vx-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 12px;
+}
+
+.vx-label {
+  display: block;
+  font-size: 13px;
+  color: var(--vx-muted);
+  margin-bottom: 8px;
+}
+
+.vx-input,
+.vx-range,
+.vx-color,
+#vx-url {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+  padding: 10px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vx-input:focus,
+.vx-range:focus,
+.vx-color:focus,
+#vx-url:focus {
+  border-color: rgba(139, 92, 246, 0.8);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.14);
+}
+
+.vx-range {
+  appearance: none;
+  height: 6px;
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+}
+
+.vx-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--vx-accent);
+  border: 3px solid #111827;
+  cursor: pointer;
+}
+
+.vx-btn,
+.vx-eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.vx-btn {
+  background: var(--vx-accent);
+  color: #fff;
+  width: 100%;
+}
+
+.vx-btn:hover,
+.vx-eye:hover {
+  transform: translateY(-1px);
+}
+
+.vx-btn-accent {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+.vx-btn-danger {
+  background: rgba(248, 113, 113, 0.15);
+  color: #fee2e2;
+}
+
+.vx-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.vx-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  cursor: pointer;
+}
+
+.vx-list-selected {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+.vx-eye {
+  min-width: 44px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+#vx-properties {
+  margin-top: 4px;
+}
+
+@media (max-width: 720px) {
+  #vx-editor {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100vh - 24px);
+  }
+
+  #vx-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+}
